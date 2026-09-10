@@ -7,8 +7,8 @@
 - [x] 1.1 创建后端工程骨架（Maven 项目，JDK 指向 `C:\Program Files\Java\jdk-25`，`maven.compiler.release=21`），引入 `spring-boot-starter-parent 3.5.x`、`mybatis-plus-spring-boot3-starter`、`mysql-connector-j`、`jjwt-impl`、`jjwt-jackson`、`easyexcel`、`spring-boot-starter-validation`、`spring-boot-starter-aop`、`lombok` 依赖，验证 `D:\maven\bin\mvn.cmd compile` 成功
 - [x] 1.2 创建前端工程骨架（Vite + Vue3 + TypeScript + Element Plus + Pinia + Axios + ECharts），配置 Vite 开发代理 `/api/*` → `http://localhost:8081`，验证 `npm install` 与 `npm run dev` 可启动
 - [x] 1.3 编写数据库初始化脚本 `backend/src/main/resources/sql/schema.sql + data.sql`，建库 `ledger` 编码 utf8mb4，创建 8 张表（`sys_user / sys_role / sys_menu / sys_user_role / sys_role_menu / fin_category / fin_record / sys_oper_log`），并写入种子数据：管理员角色编码 `admin`、普通用户角色编码 `user`、两个账号 `admin/admin123` 与 `user/user123`（密码由后端 InitDataRunner 生成），管理员拥有全部菜单/按钮权限，普通用户仅拥有财务模块权限
-- [ ] 1.4 实现后端通用层：统一返回类 `Result<T>` 与 `PageResult<T>`、全局异常处理 `GlobalExceptionHandler`、MyBatis-Plus 分页插件 `PaginationInnerInterceptor`、全局逻辑删除字段 `is_deleted`、跨域配置 `CorsConfig`，验证 Spring Boot 应用启动日志无 ERROR
-- [ ] 1.5 实现前端基础层：axios 封装 `request.ts`（自动注入 `Authorization: Bearer <token>`，统一处理 401/403）、Pinia store 骨架（`user.ts`、`permission.ts`）、基础主布局 `Layout.vue`、登录页 `LoginView.vue`，验证登录页 `http://localhost:5173/login` 可渲染
+- [x] 1.4 实现后端通用层：统一返回类 `Result<T>` 与 `PageResult<T>`、全局异常处理 `GlobalExceptionHandler`、MyBatis-Plus 分页插件 `PaginationInnerInterceptor`、全局逻辑删除字段 `is_deleted`、跨域配置 `CorsConfig`，验证 Spring Boot 应用启动日志无 ERROR
+- [x] 1.5 实现前端基础层：axios 封装 `request.ts`（自动注入 `Authorization: Bearer <token>`，统一处理 401/403）、Pinia store 骨架（`user.ts`、`permission.ts`）、基础主布局 `Layout.vue`、登录页 `LoginView.vue`，验证登录页 `http://localhost:5173/login` 可渲染
 
 ## 2. 认证模块（auth）
 
