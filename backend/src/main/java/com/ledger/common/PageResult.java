@@ -1,0 +1,23 @@
+package com.ledger.common;
+
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.List;
+
+@Data
+public class PageResult<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private Long total;
+    private List<T> rows;
+
+    public PageResult() {
+    }
+
+    public PageResult(Long total, List<T> rows) {
+        this.total = total;
+        this.rows = rows;
+    }
+}
