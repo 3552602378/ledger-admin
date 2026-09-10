@@ -1,6 +1,7 @@
 package com.ledger.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -19,6 +20,7 @@ public class SysUser implements Serializable {
 
     private String nickname;
 
+    @JsonIgnore
     private String password;
 
     private Integer status;

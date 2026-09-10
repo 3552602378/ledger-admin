@@ -12,7 +12,7 @@
 
 ## 2. 认证模块（auth）
 
-- [ ] 2.1 实现后端登录接口 `POST /api/auth/login`：校验账号状态 → BCrypt 校验密码 → jjwt 0.12 签发 HS256 令牌（payload 含 `userId`、`username`，过期 2 小时）→ 返回 token 与当前用户基础信息；错误时返回 401 与"用户名或密码错误"，不泄露账号存在性；验证正确/错误凭据返回符合预期
+- [x] 2.1 实现后端登录接口 `POST /api/auth/login`：校验账号状态 → BCrypt 校验密码 → jjwt 0.12 签发 HS256 令牌（payload 含 `userId`、`username`，过期 2 小时）→ 返回 token 与当前用户基础信息；错误时返回 401 与"用户名或密码错误"，不泄露账号存在性；验证正确/错误凭据返回符合预期
 - [ ] 2.2 实现 Spring Security 配置与 JWT 过滤器：自定义 `JwtAuthenticationFilter` 解析令牌并注入 `LoginUser`；放行 `/api/auth/login`、静态资源；其余请求须携带有效 token；未登录返回 401，无权限返回 403；统一 JSON 响应格式；验证无 token 访问 `/api/system/users` 返回 401
 - [ ] 2.3 实现前端认证闭环：登录成功后本地存储 token 到 `localStorage`；请求拦截器自动注入 token；401 时清除 token 并跳转登录页；Vue Router 全局守卫在未登录时重定向到 `/login`，已登录访问 `/login` 重定向到首页；验证登录成功跳转 `/dashboard`、token 过期后访问受保护页面自动登出
 
