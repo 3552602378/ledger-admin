@@ -13,12 +13,12 @@
 ## 2. 认证模块（auth）
 
 - [x] 2.1 实现后端登录接口 `POST /api/auth/login`：校验账号状态 → BCrypt 校验密码 → jjwt 0.12 签发 HS256 令牌（payload 含 `userId`、`username`，过期 2 小时）→ 返回 token 与当前用户基础信息；错误时返回 401 与"用户名或密码错误"，不泄露账号存在性；验证正确/错误凭据返回符合预期
-- [ ] 2.2 实现 Spring Security 配置与 JWT 过滤器：自定义 `JwtAuthenticationFilter` 解析令牌并注入 `LoginUser`；放行 `/api/auth/login`、静态资源；其余请求须携带有效 token；未登录返回 401，无权限返回 403；统一 JSON 响应格式；验证无 token 访问 `/api/system/users` 返回 401
-- [ ] 2.3 实现前端认证闭环：登录成功后本地存储 token 到 `localStorage`；请求拦截器自动注入 token；401 时清除 token 并跳转登录页；Vue Router 全局守卫在未登录时重定向到 `/login`，已登录访问 `/login` 重定向到首页；验证登录成功跳转 `/dashboard`、token 过期后访问受保护页面自动登出
+- [x] 2.2 实现 Spring Security 配置与 JWT 过滤器：自定义 `JwtAuthenticationFilter` 解析令牌并注入 `LoginUser`；放行 `/api/auth/login`、静态资源；其余请求须携带有效 token；未登录返回 401，无权限返回 403；统一 JSON 响应格式；验证无 token 访问 `/api/system/users` 返回 401
+- [x] 2.3 实现前端认证闭环：登录成功后本地存储 token 到 `localStorage`；请求拦截器自动注入 token；401 时清除 token 并跳转登录页；Vue Router 全局守卫在未登录时重定向到 `/login`，已登录访问 `/login` 重定向到首页；验证登录成功跳转 `/dashboard`、token 过期后访问受保护页面自动登出
 
 ## 3. 基础管理模块（RBAC）
 
-- [ ] 3.1 实现后端用户管理接口（`/api/system/users`）：分页列表（关键词搜索用户名/昵称）、新增（密码 BCrypt 加密）、编辑、启用/禁用、重置密码（生成新密码并 BCrypt 加密）；用户表密码字段永远不在响应中返回；验证各接口 JSON 输出与数据库变更
+- [x] 3.1 实现后端用户管理接口（`/api/system/users`）：分页列表（关键词搜索用户名/昵称）、新增（密码 BCrypt 加密）、编辑、启用/禁用、重置密码（生成新密码并 BCrypt 加密）；用户表密码字段永远不在响应中返回；验证各接口 JSON 输出与数据库变更
 - [ ] 3.2 实现后端角色管理接口（`/api/system/roles`）：角色 CRUD + 角色-菜单关联保存/查询；删除角色时级联删除 `sys_user_role` 与 `sys_role_menu` 关联；验证分配菜单后关联表正确
 - [ ] 3.3 实现后端菜单管理接口（`/api/system/menus`）：菜单 CRUD、树形查询、排序、菜单类型字段 `menu_type`（1 目录 / 2 菜单 / 3 按钮）、`perms` 权限标识；删除含子节点的菜单时拒绝或提示；验证树形接口返回层级正确
 - [ ] 3.4 实现后端当前用户权限接口 `GET /api/auth/info`：返回当前用户信息、菜单树、按钮 `perms` 列表；验证 `admin` 与 `user` 登录后返回的菜单与 perms 不同
