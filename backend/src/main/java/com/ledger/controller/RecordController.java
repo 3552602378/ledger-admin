@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/finance/records")
 @RequiredArgsConstructor
@@ -20,6 +22,12 @@ public class RecordController {
     @PreAuthorize("@ss.hasPermi('finance:record:view')")
     public Result<PageResult<FinRecord>> page(RecordQueryDTO query) {
         return Result.ok(recordService.page(query));
+    }
+
+    @GetMapping("/statistics")
+    @PreAuthorize("@ss.hasPermi('finance:record:view')")
+    public Result<Map<String, Object>> statistics(RecordQueryDTO query) {
+        return Result.ok(recordService.statistics(query));
     }
 
     @PostMapping

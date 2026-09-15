@@ -1,6 +1,7 @@
 package com.ledger.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ledger.common.BizException;
 import com.ledger.common.PageResult;
@@ -13,8 +14,10 @@ import com.ledger.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,24 +42,9 @@ public class RecordService {
         }
 
         // 时间维度筛选
-        if (query.getDateType() != null && !query.getDateType().isBlank()) {
-            LocalDate today = LocalDate.now();
-            LocalDate start = null;
-            LocalDate end = null;
-            switch (query.getDateType()) {
-                case "today" -> start = today;
-                case "week" -> { start = today.minusDays(6); end = today; }
-                case "month" -> { start = today.withDayOfMonth(1); end = today; }
-                case "custom" -> {
-                    if (query.getStartDate() != null && !query.getStartDate().isBlank()) {
-                        start = LocalDate.parse(query.getStartDate(), DAY_FMT);
-                    }
-                    if (query.getEndDate() != null && !query.getEndDate().isBlank()) {
-                        end = LocalDate.parse(query.getEndDate(), DAY_FMT);
-                    }
-                }
-                default -> { } // 忽略未知维度
-            }
+        LocalDate[] range = resolveDateRange(query);
+        LocalDate start = range[0], end = range[1];
+        if (start != null || end != null) {
             if (start != null && end != null && start.equals(end)) {
                 wrapper.eq(FinRecord::getRecordDate, start);
             } else {
@@ -88,6 +76,78 @@ public class RecordService {
             rows.forEach(r -> r.setCategoryName(nameMap.get(r.getCategoryId())));
         }
         return new PageResult<>(page.getTotal(), rows);
+    }
+
+    /** 基础金额统计：按当前筛选条件聚合收入/支出/结余，过滤类型维度，保证两个金额同时可见 */
+    public Map<String, Object> statistics(RecordQueryDTO query) {
+        QueryWrapper<FinRecord> qw = new QueryWrapper<>();
+        qw.select(
+                "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS totalIncome",
+                "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS totalExpense");
+        applyFilterColumns(qw, query);
+
+        Map<String, Object> row = recordMapper.selectMaps(qw).get(0);
+        BigDecimal totalIncome = decimal(row.get("totalIncome"));
+        BigDecimal totalExpense = decimal(row.get("totalExpense"));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalIncome", totalIncome);
+        result.put("totalExpense", totalExpense);
+        result.put("balance", totalIncome.subtract(totalExpense));
+        return result;
+    }
+
+    /** 解析日期维度为 [start, end]，custom 用起止日期，其余维度自动推算 */
+    private LocalDate[] resolveDateRange(RecordQueryDTO query) {
+        LocalDate today = LocalDate.now();
+        LocalDate start = null;
+        LocalDate end = null;
+        String dateType = query.getDateType();
+        if (dateType != null && !dateType.isBlank()) {
+            switch (dateType) {
+                case "today" -> start = today;
+                case "week" -> { start = today.minusDays(6); end = today; }
+                case "month" -> { start = today.withDayOfMonth(1); end = today; }
+                case "custom" -> {
+                    if (query.getStartDate() != null && !query.getStartDate().isBlank()) {
+                        start = LocalDate.parse(query.getStartDate(), DAY_FMT);
+                    }
+                    if (query.getEndDate() != null && !query.getEndDate().isBlank()) {
+                        end = LocalDate.parse(query.getEndDate(), DAY_FMT);
+                    }
+                }
+                default -> { } // 忽略未知维度
+            }
+        }
+        return new LocalDate[]{start, end};
+    }
+
+    /** 统计查询的条件：归属隔离 + 日期区间 + 分类 + 备注模糊（不含类型过滤） */
+    private void applyFilterColumns(QueryWrapper<FinRecord> qw, RecordQueryDTO query) {
+        boolean admin = SecurityUtils.isAdmin();
+        if (!admin) {
+            qw.eq("user_id", SecurityUtils.getUserId());
+        }
+        LocalDate[] range = resolveDateRange(query);
+        LocalDate start = range[0], end = range[1];
+        if (start != null || end != null) {
+            if (start != null && end != null && start.equals(end)) {
+                qw.eq("record_date", start);
+            } else {
+                if (start != null) qw.ge("record_date", start);
+                if (end != null) qw.le("record_date", end);
+            }
+        }
+        if (query.getCategoryId() != null) {
+            qw.eq("category_id", query.getCategoryId());
+        }
+        if (query.getRemark() != null && !query.getRemark().isBlank()) {
+            qw.like("remark", query.getRemark());
+        }
+    }
+
+    private BigDecimal decimal(Object value) {
+        return value == null ? BigDecimal.ZERO : new BigDecimal(value.toString());
     }
 
     public void add(FinRecord record) {
