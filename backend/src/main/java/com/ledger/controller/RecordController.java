@@ -2,6 +2,7 @@ package com.ledger.controller;
 
 import com.ledger.common.PageResult;
 import com.ledger.common.Result;
+import com.ledger.dto.RecordQueryDTO;
 import com.ledger.entity.FinRecord;
 import com.ledger.service.RecordService;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,8 @@ public class RecordController {
 
     @GetMapping
     @PreAuthorize("@ss.hasPermi('finance:record:view')")
-    public Result<PageResult<FinRecord>> page(@RequestParam long pageNum,
-                                              @RequestParam long pageSize) {
-        return Result.ok(recordService.page(pageNum, pageSize));
+    public Result<PageResult<FinRecord>> page(RecordQueryDTO query) {
+        return Result.ok(recordService.page(query));
     }
 
     @PostMapping

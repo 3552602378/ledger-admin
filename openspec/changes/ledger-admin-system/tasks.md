@@ -31,7 +31,7 @@
 
 - [x] 4.1 实现后端收支分类接口（`/api/finance/categories`）：字段 `type`（income/expense）、名称 CRUD；删除前校验是否被 `fin_record` 引用，若被引用则拒绝删除并提示；实现前端分类管理页；验证增删改查与引用校验
 - [x] 4.2 实现后端收支记录接口（`/api/finance/records`）：新增记录时自动将 `user_id` 设为当前登录用户 ID；编辑、删除（逻辑删除）、分页列表；普通用户只能操作/查看本人记录，管理员可操作/查看全部；验证数据归属正确
-- [ ] 4.3 实现后端多条件筛选接口：支持时间维度（`today/week/month/custom` + 起止日期）、类型（income/expense）、分类 ID、备注关键词模糊搜索、分页；参数为空时不参与筛选；验证组合条件结果与 SQL 一致
+- [x] 4.3 实现后端多条件筛选接口：支持时间维度（`today/week/month/custom` + 起止日期）、类型（income/expense）、分类 ID、备注关键词模糊搜索、分页；参数为空时不参与筛选；验证组合条件结果与 SQL 一致
 - [ ] 4.4 实现后端基础金额统计接口（`/api/finance/records/statistics`）：按当前筛选条件返回 `totalIncome / totalExpense / balance`，后端使用 `BigDecimal` 与 `SUM(amount)` 计算；验证含小数金额时精度精确到分、切换筛选条件后统计联动
 - [ ] 4.5 实现前端收支记录页（`/finance/records`）：顶部筛选栏（快捷时间按钮 + 日期范围选择器 + 类型下拉 + 分类下拉 + 备注搜索）、统计卡片（收入/支出/结余）、新增/编辑抽屉、分页表格；验证新增记录后列表与统计同步刷新
 
