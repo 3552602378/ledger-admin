@@ -49,7 +49,7 @@ async function handleLogin() {
     userStore.setToken(res.data.token)
     await userStore.fetchUserInfo()
     ElMessage.success('登录成功')
-    router.push('/dashboard')
+    router.push(userStore.homePath)
   } finally {
     loading.value = false
   }

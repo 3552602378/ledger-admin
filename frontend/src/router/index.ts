@@ -71,7 +71,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.public) {
     if (userStore.isLoggedIn && to.path === '/login') {
-      return next('/dashboard')
+      return next(userStore.homePath)
     }
     return next()
   }
@@ -91,7 +91,10 @@ router.beforeEach(async (to, from, next) => {
 
   const perm = to.meta.perm as string
   if (perm && !userStore.perms.includes(perm) && !userStore.perms.includes('*:*:*')) {
-    return next('/dashboard')
+    // 越权访问时跳转到用户可访问的首个菜单，避免跳回被拦目标造成死循环
+    const home = userStore.homePath
+    if (home === to.path) return next()
+    return next(home)
   }
 
   next()

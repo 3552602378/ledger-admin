@@ -16,6 +16,22 @@ export const useUserStore = defineStore('user', () => {
 
   const isLoggedIn = computed(() => !!token.value)
 
+  // 用户可访问的第一个叶子菜单路径，作为登录后的默认跳转目标
+  const homePath = computed(() => {
+    const leaves: string[] = []
+    const walk = (nodes: any[]) => {
+      for (const n of nodes) {
+        if (n.children && n.children.length) {
+          walk(n.children)
+        } else if (n.path) {
+          leaves.push(n.path)
+        }
+      }
+    }
+    walk(menus.value)
+    return leaves[0] || '/dashboard'
+  })
+
   function setToken(value: string) {
     token.value = value
     localStorage.setItem('token', value)
@@ -43,6 +59,7 @@ export const useUserStore = defineStore('user', () => {
     menus,
     perms,
     isLoggedIn,
+    homePath,
     setToken,
     clearToken,
     fetchUserInfo,
