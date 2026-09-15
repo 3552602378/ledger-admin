@@ -20,3 +20,39 @@ export function getMenuTree() {
     method: 'get',
   })
 }
+
+export interface MenuSaveDTO {
+  id?: number
+  parentId: number
+  menuName: string
+  menuType: number
+  path?: string
+  component?: string
+  perms?: string
+  icon?: string
+  sortOrder?: number
+  status: number
+}
+
+export function addMenu(data: MenuSaveDTO) {
+  return request({
+    url: '/system/menus',
+    method: 'post',
+    data,
+  })
+}
+
+export function updateMenu(id: number, data: MenuSaveDTO) {
+  return request({
+    url: `/system/menus/${id}`,
+    method: 'put',
+    data,
+  })
+}
+
+export function deleteMenu(id: number) {
+  return request({
+    url: `/system/menus/${id}`,
+    method: 'delete',
+  })
+}
