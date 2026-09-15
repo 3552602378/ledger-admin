@@ -37,7 +37,7 @@
 
 ## 5. 进阶加分项（bonus）
 
-- [ ] 5.1 实现看板统计接口 `GET /api/dashboard/stats`：返回近 12 个月按月收入支出、近 7 日按日收入支出、分类金额占比三组数据；数据范围遵循 D7 隔离规则（管理员全部，普通用户本人）；前端 Dashboard 页使用 ECharts 渲染折线图/饼图/柱状图；验证新增记录后图表刷新
+- [x] 5.1 实现看板统计接口 `GET /api/dashboard/stats`：返回近 12 个月按月收入支出、近 7 日按日收入支出、分类金额占比三组数据；数据范围遵循 D7 隔离规则（管理员全部，普通用户本人）；前端 Dashboard 页使用 ECharts 渲染折线图/饼图/柱状图；验证新增记录后图表刷新
 - [ ] 5.2 实现 Excel 导出接口 `POST /api/export/records`：使用 EasyExcel 4.x，参数复用记录筛选 DTO 并增加 `ids` 数组与 `exportAll` 标志；`exportAll=true` 导出全量（不含已软删除），`ids` 非空导出选中记录，否则导出当前筛选结果；验证下载文件无乱码、金额保留两位、数据与列表一致
 - [ ] 5.3 实现前端批量操作：收支记录表格支持多选（el-table selection-column），顶部显示"批量删除"与"批量导出"按钮；批量删除调用 `DELETE /api/finance/records/batch`（请求体 ids 数组 + 逻辑删除）；批量导出调用 `/api/export/records` 并触发下载；验证选中记录批量生效
 - [ ] 5.4 实现按钮级权限控制：在 `sys_menu` 中新增按钮节点（如 `system:user:add`、`finance:record:export`）；前端注册 `v-permission` 指令，根据当前用户 perms 列表显隐按钮；后端 Controller 方法加 `@PreAuthorize("@ss.hasPermi('system:user:add')")`；验证无权限时按钮隐藏且直接调接口返回 403
