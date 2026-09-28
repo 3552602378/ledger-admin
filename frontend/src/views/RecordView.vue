@@ -62,13 +62,36 @@
       <el-button type="primary" @click="handleSearch">查询</el-button>
       <el-button @click="handleReset">重置</el-button>
       <span style="flex: 1" />
+      <el-button
+        v-if="hasPerm('finance:record:delete')"
+        type="danger"
+        :disabled="!selectedIds.length"
+        @click="handleBatchDelete"
+      >
+        批量删除
+      </el-button>
+      <el-button
+        v-if="hasPerm('finance:record:export')"
+        :disabled="!selectedIds.length"
+        @click="handleBatchExport"
+      >
+        批量导出
+      </el-button>
       <el-button v-if="hasPerm('finance:record:add')" type="success" @click="openDrawer()">
         新增收支
       </el-button>
     </div>
 
     <!-- 表格 -->
-    <el-table :data="rows" v-loading="loading" border stripe>
+    <el-table
+      :data="rows"
+      v-loading="loading"
+      border
+      stripe
+      row-key="id"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" width="50" />
       <el-table-column prop="recordDate" label="日期" width="120" />
       <el-table-column label="类型" width="90">
         <template #default="{ row }">
@@ -177,6 +200,8 @@ import {
   addRecord,
   updateRecord,
   deleteRecord,
+  batchDeleteRecords,
+  exportRecords,
   type RecordVO,
 } from '@/api/record'
 import { listCategories, type CategoryVO } from '@/api/category'
@@ -191,6 +216,13 @@ const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(10)
 const loading = ref(false)
+
+// 批量操作：当前表格选中记录的主键
+const selectedIds = ref<number[]>([])
+
+function handleSelectionChange(selected: RecordVO[]) {
+  selectedIds.value = selected.map((r) => r.id)
+}
 
 // 统计
 const statistics = reactive({ totalIncome: 0, totalExpense: 0, balance: 0 })
@@ -337,6 +369,50 @@ async function handleDelete(row: RecordVO) {
   await deleteRecord(row.id)
   ElMessage.success('删除成功')
   refresh()
+}
+
+async function handleBatchDelete() {
+  if (!selectedIds.value.length) return
+  try {
+    await ElMessageBox.confirm(`确定删除选中的 ${selectedIds.value.length} 条记录吗？`, '提示', {
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+  await batchDeleteRecords(selectedIds.value)
+  ElMessage.success('删除成功')
+  selectedIds.value = []
+  refresh()
+}
+
+async function handleBatchExport() {
+  if (!selectedIds.value.length) return
+  const blob = (await exportRecords({ ids: selectedIds.value })) as unknown as Blob
+  await saveBlob(blob, `收支记录_${dateStamp()}.xlsx`)
+}
+
+/**
+ * 保存导出文件；后端无权限等失败场景仍按统一响应返回 HTTP 200 + JSON，
+ * 需先识别为 JSON 才能避免下载到一个错误内容文件
+ */
+async function saveBlob(blob: Blob, fileName: string) {
+  if (blob.type.includes('application/json')) {
+    const text = await blob.text()
+    ElMessage.error(JSON.parse(text).message || '导出失败')
+    return
+  }
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function dateStamp(): string {
+  const d = new Date()
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
 }
 
 // 当前登录用户无 finance:record:add 时，抽屉里的新增按钮也需要权限（已用 hasPerm 控制入口）

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -48,6 +49,13 @@ public class RecordController {
     @PreAuthorize("@ss.hasPermi('finance:record:delete')")
     public Result<Void> delete(@PathVariable Long id) {
         recordService.delete(id);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/batch")
+    @PreAuthorize("@ss.hasPermi('finance:record:delete')")
+    public Result<Void> batchDelete(@RequestBody List<Long> ids) {
+        recordService.batchDelete(ids);
         return Result.ok();
     }
 }

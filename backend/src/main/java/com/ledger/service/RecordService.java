@@ -194,6 +194,24 @@ public class RecordService {
         recordMapper.deleteById(exist.getId());
     }
 
+    /** 批量删除：先校验记录存在与归属，再按 id 逻辑删除 */
+    public void batchDelete(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new BizException("请选择要删除的记录");
+        }
+        List<FinRecord> records = recordMapper.selectList(
+                new LambdaQueryWrapper<FinRecord>().in(FinRecord::getId, ids));
+        if (records.size() != ids.stream().distinct().count()) {
+            throw new BizException("部分记录不存在，请刷新后重试");
+        }
+        boolean admin = SecurityUtils.isAdmin();
+        Long userId = SecurityUtils.getUserId();
+        if (!admin && records.stream().anyMatch(r -> !r.getUserId().equals(userId))) {
+            throw new BizException("无权操作他人的收支记录");
+        }
+        recordMapper.delete(new LambdaQueryWrapper<FinRecord>().in(FinRecord::getId, ids));
+    }
+
     /** 校验记录存在且归属当前用户（非管理员只能操作本人记录） */
     private FinRecord getOwnedRecord(Long id) {
         FinRecord exist = recordMapper.selectById(id);

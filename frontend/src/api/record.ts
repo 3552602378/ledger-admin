@@ -66,3 +66,28 @@ export function deleteRecord(id: number) {
     method: 'delete',
   })
 }
+
+export function batchDeleteRecords(ids: number[]) {
+  return request({
+    url: '/finance/records/batch',
+    method: 'delete',
+    data: ids,
+  })
+}
+
+export interface RecordExportParams extends Partial<RecordQuery> {
+  /** 批量导出选中的记录 id，非空时优先级最高 */
+  ids?: number[]
+  /** true 表示导出全量 */
+  exportAll?: boolean
+}
+
+export function exportRecords(data: RecordExportParams) {
+  return request({
+    url: '/export/records',
+    method: 'post',
+    data,
+    responseType: 'blob',
+    timeout: 60000,
+  })
+}
