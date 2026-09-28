@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ledger.common.BizException;
 import com.ledger.common.PageResult;
+import com.ledger.dto.RecordExportDTO;
 import com.ledger.dto.RecordQueryDTO;
 import com.ledger.entity.FinCategory;
 import com.ledger.entity.FinRecord;
@@ -32,14 +33,26 @@ public class RecordService {
     private final FinCategoryMapper categoryMapper;
 
     public PageResult<FinRecord> page(RecordQueryDTO query) {
-        Long userId = SecurityUtils.getUserId();
-        boolean admin = SecurityUtils.isAdmin();
+        Page<FinRecord> page = recordMapper.selectPage(new Page<>(query.getPageNum(), query.getPageSize()), buildWrapper(query));
+        return new PageResult<>(page.getTotal(), fillCategoryName(page.getRecords()));
+    }
 
-        LambdaQueryWrapper<FinRecord> wrapper = new LambdaQueryWrapper<>();
-        // 权限隔离：普通用户只能查看本人记录，管理员可查看全部
-        if (!admin) {
-            wrapper.eq(FinRecord::getUserId, userId);
+    /** 按导出参数查询记录（不分页）：ids 优先，其次 exportAll 全量，否则按当前筛选条件 */
+    public List<FinRecord> listForExport(RecordExportDTO dto) {
+        if (dto.getIds() != null && !dto.getIds().isEmpty()) {
+            LambdaQueryWrapper<FinRecord> wrapper = isolationWrapper();
+            wrapper.in(FinRecord::getId, dto.getIds());
+            wrapper.orderByDesc(FinRecord::getRecordDate).orderByDesc(FinRecord::getId);
+            return fillCategoryName(recordMapper.selectList(wrapper));
         }
+        // exportAll=true 时仅保留归属隔离，忽略其余筛选条件
+        RecordQueryDTO condition = Boolean.TRUE.equals(dto.getExportAll()) ? new RecordQueryDTO() : dto;
+        return fillCategoryName(recordMapper.selectList(buildWrapper(condition)));
+    }
+
+    /** 组装列表/导出共用的查询条件：归属隔离 + 时间维度 + 类型/分类/备注 + 排序 */
+    private LambdaQueryWrapper<FinRecord> buildWrapper(RecordQueryDTO query) {
+        LambdaQueryWrapper<FinRecord> wrapper = isolationWrapper();
 
         // 时间维度筛选
         LocalDate[] range = resolveDateRange(query);
@@ -65,9 +78,20 @@ public class RecordService {
         }
 
         wrapper.orderByDesc(FinRecord::getRecordDate).orderByDesc(FinRecord::getId);
+        return wrapper;
+    }
 
-        Page<FinRecord> page = recordMapper.selectPage(new Page<>(query.getPageNum(), query.getPageSize()), wrapper);
-        List<FinRecord> rows = page.getRecords();
+    /** 归属隔离：普通用户只能查看本人记录，管理员可查看全部 */
+    private LambdaQueryWrapper<FinRecord> isolationWrapper() {
+        LambdaQueryWrapper<FinRecord> wrapper = new LambdaQueryWrapper<>();
+        if (!SecurityUtils.isAdmin()) {
+            wrapper.eq(FinRecord::getUserId, SecurityUtils.getUserId());
+        }
+        return wrapper;
+    }
+
+    /** 批量回填分类名称，供列表与导出共用 */
+    private List<FinRecord> fillCategoryName(List<FinRecord> rows) {
         if (!rows.isEmpty()) {
             Map<Long, String> nameMap = categoryMapper.selectList(
                             new LambdaQueryWrapper<FinCategory>()
@@ -75,7 +99,7 @@ public class RecordService {
                     .stream().collect(Collectors.toMap(FinCategory::getId, FinCategory::getName, (a, b) -> a));
             rows.forEach(r -> r.setCategoryName(nameMap.get(r.getCategoryId())));
         }
-        return new PageResult<>(page.getTotal(), rows);
+        return rows;
     }
 
     /** 基础金额统计：按当前筛选条件聚合收入/支出/结余，过滤类型维度，保证两个金额同时可见 */
