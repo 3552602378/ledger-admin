@@ -1,5 +1,6 @@
 package com.ledger.controller;
 
+import com.ledger.annotation.OperLog;
 import com.ledger.common.Result;
 import com.ledger.entity.SysMenu;
 import com.ledger.service.MenuService;
@@ -37,6 +38,7 @@ public class MenuController {
 
     @PostMapping
     @PreAuthorize("@ss.hasPermi('system:menu:add')")
+    @OperLog(title = "菜单管理", businessType = 1)
     public Result<Void> add(@RequestBody SysMenu menu) {
         menuService.add(menu);
         return Result.ok();
@@ -44,6 +46,7 @@ public class MenuController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('system:menu:edit')")
+    @OperLog(title = "菜单管理", businessType = 2)
     public Result<Void> edit(@PathVariable Long id, @RequestBody SysMenu menu) {
         menuService.edit(id, menu);
         return Result.ok();
@@ -51,6 +54,7 @@ public class MenuController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('system:menu:delete')")
+    @OperLog(title = "菜单管理", businessType = 3)
     public Result<Void> delete(@PathVariable Long id) {
         menuService.delete(id);
         return Result.ok();

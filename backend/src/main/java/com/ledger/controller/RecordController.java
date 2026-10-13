@@ -1,5 +1,6 @@
 package com.ledger.controller;
 
+import com.ledger.annotation.OperLog;
 import com.ledger.common.PageResult;
 import com.ledger.common.Result;
 import com.ledger.dto.RecordQueryDTO;
@@ -33,6 +34,7 @@ public class RecordController {
 
     @PostMapping
     @PreAuthorize("@ss.hasPermi('finance:record:add')")
+    @OperLog(title = "收支记录", businessType = 1)
     public Result<Void> add(@RequestBody FinRecord record) {
         recordService.add(record);
         return Result.ok();
@@ -40,6 +42,7 @@ public class RecordController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('finance:record:edit')")
+    @OperLog(title = "收支记录", businessType = 2)
     public Result<Void> edit(@PathVariable Long id, @RequestBody FinRecord record) {
         recordService.edit(id, record);
         return Result.ok();
@@ -47,6 +50,7 @@ public class RecordController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('finance:record:delete')")
+    @OperLog(title = "收支记录", businessType = 3)
     public Result<Void> delete(@PathVariable Long id) {
         recordService.delete(id);
         return Result.ok();
@@ -54,6 +58,7 @@ public class RecordController {
 
     @DeleteMapping("/batch")
     @PreAuthorize("@ss.hasPermi('finance:record:delete')")
+    @OperLog(title = "收支记录", businessType = 3)
     public Result<Void> batchDelete(@RequestBody List<Long> ids) {
         recordService.batchDelete(ids);
         return Result.ok();

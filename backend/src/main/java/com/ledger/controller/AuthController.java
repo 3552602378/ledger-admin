@@ -1,5 +1,6 @@
 package com.ledger.controller;
 
+import com.ledger.annotation.OperLog;
 import com.ledger.common.Result;
 import com.ledger.security.LoginUser;
 import com.ledger.security.JwtTokenUtil;
@@ -21,6 +22,7 @@ public class AuthController {
     private final JwtTokenUtil jwtTokenUtil;
 
     @PostMapping("/login")
+    @OperLog(title = "登录", businessType = 5)
     public Result<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
         LoginUser loginUser = authService.login(request.getUsername(), request.getPassword());
         String token = jwtTokenUtil.generateToken(loginUser);

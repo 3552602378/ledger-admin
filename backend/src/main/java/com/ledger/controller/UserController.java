@@ -1,5 +1,6 @@
 package com.ledger.controller;
 
+import com.ledger.annotation.OperLog;
 import com.ledger.common.PageResult;
 import com.ledger.common.Result;
 import com.ledger.dto.UserQueryDTO;
@@ -25,6 +26,7 @@ public class UserController {
 
     @PostMapping
     @PreAuthorize("@ss.hasPermi('system:user:add')")
+    @OperLog(title = "用户管理", businessType = 1)
     public Result<Void> add(@Valid @RequestBody UserSaveDTO dto) {
         userService.add(dto);
         return Result.ok();
@@ -32,6 +34,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('system:user:edit')")
+    @OperLog(title = "用户管理", businessType = 2)
     public Result<Void> edit(@PathVariable Long id, @Valid @RequestBody UserSaveDTO dto) {
         userService.edit(id, dto);
         return Result.ok();
@@ -39,6 +42,7 @@ public class UserController {
 
     @PutMapping("/{id}/status")
     @PreAuthorize("@ss.hasPermi('system:user:edit')")
+    @OperLog(title = "用户管理", businessType = 2)
     public Result<Void> changeStatus(@PathVariable Long id, @RequestParam Integer status) {
         userService.changeStatus(id, status);
         return Result.ok();
@@ -46,12 +50,14 @@ public class UserController {
 
     @PutMapping("/{id}/reset-password")
     @PreAuthorize("@ss.hasPermi('system:user:reset')")
+    @OperLog(title = "用户管理", businessType = 2)
     public Result<String> resetPassword(@PathVariable Long id) {
         return Result.ok(userService.resetPassword(id));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('system:user:delete')")
+    @OperLog(title = "用户管理", businessType = 3)
     public Result<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return Result.ok();

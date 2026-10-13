@@ -1,5 +1,6 @@
 package com.ledger.controller;
 
+import com.ledger.annotation.OperLog;
 import com.ledger.common.Result;
 import com.ledger.entity.SysRole;
 import com.ledger.service.RoleService;
@@ -30,6 +31,7 @@ public class RoleController {
 
     @PostMapping
     @PreAuthorize("@ss.hasPermi('system:role:add')")
+    @OperLog(title = "角色管理", businessType = 1)
     public Result<Void> add(@RequestBody SysRole role) {
         roleService.add(role);
         return Result.ok();
@@ -37,6 +39,7 @@ public class RoleController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('system:role:edit')")
+    @OperLog(title = "角色管理", businessType = 2)
     public Result<Void> edit(@PathVariable Long id, @RequestBody SysRole role) {
         roleService.edit(id, role);
         return Result.ok();
@@ -44,6 +47,7 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('system:role:delete')")
+    @OperLog(title = "角色管理", businessType = 3)
     public Result<Void> delete(@PathVariable Long id) {
         roleService.delete(id);
         return Result.ok();

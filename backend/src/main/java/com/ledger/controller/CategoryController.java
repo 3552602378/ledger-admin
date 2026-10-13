@@ -1,5 +1,6 @@
 package com.ledger.controller;
 
+import com.ledger.annotation.OperLog;
 import com.ledger.common.Result;
 import com.ledger.entity.FinCategory;
 import com.ledger.service.CategoryService;
@@ -24,6 +25,7 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("@ss.hasPermi('finance:category:add')")
+    @OperLog(title = "收支分类", businessType = 1)
     public Result<Void> add(@RequestBody FinCategory category) {
         categoryService.add(category);
         return Result.ok();
@@ -31,6 +33,7 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('finance:category:edit')")
+    @OperLog(title = "收支分类", businessType = 2)
     public Result<Void> edit(@PathVariable Long id, @RequestBody FinCategory category) {
         categoryService.edit(id, category);
         return Result.ok();
@@ -38,6 +41,7 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('finance:category:delete')")
+    @OperLog(title = "收支分类", businessType = 3)
     public Result<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return Result.ok();

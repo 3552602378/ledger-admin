@@ -42,7 +42,7 @@
 - [x] 5.3 实现前端批量操作：收支记录表格支持多选（el-table selection-column），顶部显示"批量删除"与"批量导出"按钮；批量删除调用 `DELETE /api/finance/records/batch`（请求体 ids 数组 + 逻辑删除）；批量导出调用 `/api/export/records` 并触发下载；验证选中记录批量生效
 - [x] 5.4 实现按钮级权限控制：在 `sys_menu` 中新增按钮节点（如 `system:user:add`、`finance:record:export`）；前端注册 `v-permission` 指令，根据当前用户 perms 列表显隐按钮；后端 Controller 方法加 `@PreAuthorize("@ss.hasPermi('system:user:add')")`；验证无权限时按钮隐藏且直接调接口返回 403
 - [x] 5.5 验证数据软删除生效：确认 `fin_record` 等表存在 `is_deleted` 字段且 MyBatis-Plus 全局逻辑删除已开启；删除记录后数据库 `is_deleted=1`；列表、统计、导出、看板均不统计已删除记录；验证软删除行为全局一致
-- [ ] 5.6 实现操作日志：创建 `@OperLog(title, businessType)` 注解与 AOP 切面 `OperLogAspect`；在关键 Controller 方法上标注注解；切面记录模块名、业务类型（新增/修改/删除/导出等）、请求方法、URL、请求参数（JSON 前 512 字符）、操作结果、错误信息、IP、耗时，写入 `sys_oper_log`；新增操作日志查询页 `/audit/logs`；验证增删改操作均产生日志，失败操作也记录
+- [x] 5.6 实现操作日志：创建 `@OperLog(title, businessType)` 注解与 AOP 切面 `OperLogAspect`；在关键 Controller 方法上标注注解；切面记录模块名、业务类型（新增/修改/删除/导出等）、请求方法、URL、请求参数（JSON 前 512 字符）、操作结果、错误信息、IP、耗时，写入 `sys_oper_log`；新增操作日志查询页 `/audit/logs`；验证增删改操作均产生日志，失败操作也记录
 
 ## 6. 验收与交付文档
 

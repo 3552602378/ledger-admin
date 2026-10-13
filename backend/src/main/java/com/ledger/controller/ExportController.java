@@ -1,6 +1,7 @@
 package com.ledger.controller;
 
 import com.alibaba.excel.EasyExcel;
+import com.ledger.annotation.OperLog;
 import com.ledger.dto.RecordExcelVO;
 import com.ledger.dto.RecordExportDTO;
 import com.ledger.entity.FinRecord;
@@ -33,6 +34,7 @@ public class ExportController {
     /** 导出收支记录：ids 非空导出选中记录，exportAll=true 导出全量，否则导出当前筛选结果 */
     @PostMapping("/records")
     @PreAuthorize("@ss.hasPermi('finance:record:export')")
+    @OperLog(title = "收支记录", businessType = 4)
     public void exportRecords(@RequestBody RecordExportDTO dto, HttpServletResponse response) throws IOException {
         List<RecordExcelVO> rows = recordService.listForExport(dto).stream().map(this::toExcelRow).toList();
 
