@@ -43,6 +43,7 @@
 - [x] 5.4 实现按钮级权限控制：在 `sys_menu` 中新增按钮节点（如 `system:user:add`、`finance:record:export`）；前端注册 `v-permission` 指令，根据当前用户 perms 列表显隐按钮；后端 Controller 方法加 `@PreAuthorize("@ss.hasPermi('system:user:add')")`；验证无权限时按钮隐藏且直接调接口返回 403
 - [x] 5.5 验证数据软删除生效：确认 `fin_record` 等表存在 `is_deleted` 字段且 MyBatis-Plus 全局逻辑删除已开启；删除记录后数据库 `is_deleted=1`；列表、统计、导出、看板均不统计已删除记录；验证软删除行为全局一致
 - [x] 5.6 实现操作日志：创建 `@OperLog(title, businessType)` 注解与 AOP 切面 `OperLogAspect`；在关键 Controller 方法上标注注解；切面记录模块名、业务类型（新增/修改/删除/导出等）、请求方法、URL、请求参数（JSON 前 512 字符）、操作结果、错误信息、IP、耗时，写入 `sys_oper_log`；新增操作日志查询页 `/audit/logs`；验证增删改操作均产生日志，失败操作也记录
+- [x] 5.7 实现看板筛选联动（闭合 dashboard spec 的「分类占比随筛选更新」）：`GET /api/dashboard/stats` 增加可选 `type` 入参（income/expense），作用范围覆盖近 12 月、近 7 日与分类占比三组数据；前端看板顶部增加「全部/收入/支出」筛选栏，切换后重新拉取并刷新三张图表；数据范围仍遵循 D7 隔离规则；验证切换类型后饼图按新条件刷新、选「支出」时收入折线归零
 
 ## 6. 验收与交付文档
 

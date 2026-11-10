@@ -23,9 +23,11 @@ public class DashboardService {
 
     private final FinRecordMapper recordMapper;
 
-    /** 看板统计：近12月/近7日/分类占比，数据隔离 admin 全部、普通用户本人 */
-    public Map<String, Object> stats() {
+    /** 看板统计：近12月/近7日/分类占比，数据隔离 admin 全部、普通用户本人；type 为 income/expense 时只统计该类型 */
+    public Map<String, Object> stats(String type) {
         Long userId = SecurityUtils.isAdmin() ? null : SecurityUtils.getUserId();
+        // 仅接受 income/expense，其余值（含空串与非法值）按「全部」处理
+        String typeFilter = ("income".equals(type) || "expense".equals(type)) ? type : null;
         LocalDate today = LocalDate.now();
 
         // 1. 近 12 个月
@@ -33,7 +35,7 @@ public class DashboardService {
         List<String> months = new ArrayList<>();
         List<BigDecimal> monthIncome = new ArrayList<>();
         List<BigDecimal> monthExpense = new ArrayList<>();
-        Map<String, Map<String, Object>> mMap = recordMapper.monthly(userId, monthStart, today).stream()
+        Map<String, Map<String, Object>> mMap = recordMapper.monthly(userId, monthStart, today, typeFilter).stream()
                 .collect(Collectors.toMap(r -> (String) r.get("key"), r -> r));
         for (int i = 0; i < 12; i++) {
             String ym = today.minusMonths(11 - i).format(MONTH_FMT);
@@ -48,7 +50,7 @@ public class DashboardService {
         List<String> days = new ArrayList<>();
         List<BigDecimal> dayIncome = new ArrayList<>();
         List<BigDecimal> dayExpense = new ArrayList<>();
-        Map<String, Map<String, Object>> dMap = recordMapper.daily(userId, dayStart, today).stream()
+        Map<String, Map<String, Object>> dMap = recordMapper.daily(userId, dayStart, today, typeFilter).stream()
                 .collect(Collectors.toMap(r -> (String) r.get("key"), r -> r));
         for (int i = 0; i < 7; i++) {
             String d = today.minusDays(6 - i).format(DAY_FMT);
@@ -60,7 +62,7 @@ public class DashboardService {
 
         // 3. 分类金额占比
         List<Map<String, Object>> categories = new ArrayList<>();
-        for (Map<String, Object> r : recordMapper.sumByCategory(userId)) {
+        for (Map<String, Object> r : recordMapper.sumByCategory(userId, typeFilter)) {
             Map<String, Object> c = new HashMap<>();
             c.put("name", r.get("category"));
             c.put("type", r.get("ctype"));

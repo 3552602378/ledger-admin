@@ -271,7 +271,7 @@ npm run dev
 
 | 方法 | 路径 | 权限 | 说明 |
 |---|---|---|---|
-| GET | `/api/dashboard/stats` | `dashboard:view` | 近 12 月、近 7 日、分类占比 |
+| GET | `/api/dashboard/stats` | `dashboard:view` | 近 12 月、近 7 日、分类占比；可选 `type=income/expense` 筛选 |
 | POST | `/api/export/records` | `finance:record:export` | 支持 `ids` / `exportAll` / 筛选三态 |
 | GET | `/api/audit/logs` | `audit:log:view` | 操作日志分页查询 |
 
@@ -313,7 +313,6 @@ npm run dev
 
 ## 十一、已知限制
 
-1. **看板无筛选控件**：`/api/dashboard/stats` 不含筛选入参，dashboard spec 中「切换统计范围或收支类型」场景未实现。
-2. **无自动化测试**：验收全部通过手工接口调用与页面操作完成，`backend/src/test` 未建立。
-3. **未引入缓存**：按设计约束不使用 Redis，权限每次请求从数据库加载。
-4. **未部署上线**：仅本地运行，无容器化与 CI 配置。
+1. **无自动化测试**：验收全部通过手工接口调用与页面操作完成，`backend/src/test` 未建立。
+2. **未引入缓存**：按设计约束不使用 Redis，权限每次请求从数据库加载。
+3. **未部署上线**：仅本地运行，无容器化与 CI 配置。

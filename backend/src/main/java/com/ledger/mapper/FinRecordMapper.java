@@ -13,7 +13,7 @@ import java.util.Map;
 @Mapper
 public interface FinRecordMapper extends BaseMapper<FinRecord> {
 
-    /** 按自然月汇总收入/支出，用于看板近 12 个月折线图 */
+    /** 按自然月汇总收入/支出，用于看板近 12 个月折线图；type 非空时只统计该收支类型 */
     @Select("""
             <script>
             SELECT DATE_FORMAT(record_date, '%Y-%m') AS `key`,
@@ -22,14 +22,16 @@ public interface FinRecordMapper extends BaseMapper<FinRecord> {
             FROM fin_record
             WHERE is_deleted = 0 AND record_date >= #{start} AND record_date &lt;= #{end}
               <if test="userId != null">AND user_id = #{userId}</if>
+              <if test="type != null">AND type = #{type}</if>
             GROUP BY `key`
             </script>
             """)
     List<Map<String, Object>> monthly(@Param("userId") Long userId,
                                       @Param("start") LocalDate start,
-                                      @Param("end") LocalDate end);
+                                      @Param("end") LocalDate end,
+                                      @Param("type") String type);
 
-    /** 按天汇总收入/支出，用于看板近 7 日折线图 */
+    /** 按天汇总收入/支出，用于看板近 7 日折线图；type 非空时只统计该收支类型 */
     @Select("""
             <script>
             SELECT DATE_FORMAT(record_date, '%Y-%m-%d') AS `key`,
@@ -38,14 +40,16 @@ public interface FinRecordMapper extends BaseMapper<FinRecord> {
             FROM fin_record
             WHERE is_deleted = 0 AND record_date >= #{start} AND record_date &lt;= #{end}
               <if test="userId != null">AND user_id = #{userId}</if>
+              <if test="type != null">AND type = #{type}</if>
             GROUP BY `key`
             </script>
             """)
     List<Map<String, Object>> daily(@Param("userId") Long userId,
                                     @Param("start") LocalDate start,
-                                    @Param("end") LocalDate end);
+                                    @Param("end") LocalDate end,
+                                    @Param("type") String type);
 
-    /** 分类金额占比，用于看板饼图 */
+    /** 分类金额占比，用于看板饼图；type 非空时只统计该收支类型 */
     @Select("""
             <script>
             SELECT c.name AS category, c.type AS ctype, SUM(r.amount) AS amount
@@ -53,8 +57,9 @@ public interface FinRecordMapper extends BaseMapper<FinRecord> {
             JOIN fin_category c ON r.category_id = c.id
             WHERE r.is_deleted = 0
               <if test="userId != null">AND r.user_id = #{userId}</if>
+              <if test="type != null">AND r.type = #{type}</if>
             GROUP BY c.id, c.name, c.type
             </script>
             """)
-    List<Map<String, Object>> sumByCategory(@Param("userId") Long userId);
+    List<Map<String, Object>> sumByCategory(@Param("userId") Long userId, @Param("type") String type);
 }

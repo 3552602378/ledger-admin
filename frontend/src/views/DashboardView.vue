@@ -1,5 +1,13 @@
 <template>
   <div class="dashboard">
+    <div class="filter-bar">
+      <span class="filter-label">收支类型</span>
+      <el-radio-group v-model="filter.type" @change="load">
+        <el-radio-button value="">全部</el-radio-button>
+        <el-radio-button value="income">收入</el-radio-button>
+        <el-radio-button value="expense">支出</el-radio-button>
+      </el-radio-group>
+    </div>
     <div class="chart-card">
       <div class="chart-title">近 12 个月收支</div>
       <div ref="monthRef" class="chart" />
@@ -16,9 +24,9 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import * as echarts from 'echarts'
-import { getDashboardStats, type DashboardStats } from '@/api/dashboard'
+import { getDashboardStats, type DashboardQuery, type DashboardStats } from '@/api/dashboard'
 
 const monthRef = ref<HTMLElement>()
 const dayRef = ref<HTMLElement>()
@@ -28,8 +36,11 @@ let monthChart: echarts.ECharts | null = null
 let dayChart: echarts.ECharts | null = null
 let pieChart: echarts.ECharts | null = null
 
+const filter = reactive<DashboardQuery>({ type: '' })
+
 async function load() {
-  const res: any = await getDashboardStats()
+  const params: DashboardQuery = filter.type ? { type: filter.type } : {}
+  const res: any = await getDashboardStats(params)
   if (!res.data) return
   const stats = res.data as DashboardStats
 
@@ -100,6 +111,19 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+.filter-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.filter-label {
+  font-weight: 600;
+  color: #606266;
 }
 .chart-card {
   background: #fff;
