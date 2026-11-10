@@ -15,7 +15,8 @@ export interface RoleSaveDTO {
   roleCode: string
   status: number
   remark?: string
-  menuIds: number[]
+  /** 仅权限分配时提交；新增/编辑基本信息时不传，避免覆盖已有菜单权限 */
+  menuIds?: number[]
 }
 
 export function listRoles() {

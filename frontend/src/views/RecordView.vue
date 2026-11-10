@@ -77,6 +77,12 @@
       >
         批量导出
       </el-button>
+      <el-button v-if="hasPerm('finance:record:export')" @click="handleExportFiltered">
+        导出筛选结果
+      </el-button>
+      <el-button v-if="hasPerm('finance:record:export')" @click="handleExportAll">
+        全量导出
+      </el-button>
       <el-button v-if="hasPerm('finance:record:add')" type="success" @click="openDrawer()">
         新增收支
       </el-button>
@@ -250,14 +256,14 @@ function fmt(v: number | string | undefined): string {
   return Number(v ?? 0).toFixed(2)
 }
 
-function buildParams(withType = true) {
+function buildParams() {
   const p: any = { pageNum: pageNum.value, pageSize: pageSize.value }
   if (filter.dateType) p.dateType = filter.dateType
   if (filter.dateType === 'custom' && dateRange.value && dateRange.value.length === 2) {
     p.startDate = dateRange.value[0]
     p.endDate = dateRange.value[1]
   }
-  if (withType && filter.type) p.type = filter.type
+  if (filter.type) p.type = filter.type
   if (filter.categoryId != null && filter.categoryId !== '') p.categoryId = filter.categoryId
   if (filter.remark) p.remark = filter.remark
   return p
@@ -277,7 +283,8 @@ async function loadList() {
 }
 
 async function loadStatistics() {
-  const res: any = await getStatistics(buildParams(false))
+  // 统计与列表使用同一套筛选条件（含类型），保证切换类型后统计联动
+  const res: any = await getStatistics(buildParams())
   if (res.data) {
     statistics.totalIncome = res.data.totalIncome
     statistics.totalExpense = res.data.totalExpense
@@ -388,13 +395,38 @@ async function handleBatchDelete() {
 
 async function handleBatchExport() {
   if (!selectedIds.value.length) return
-  const blob = (await exportRecords({ ids: selectedIds.value })) as unknown as Blob
-  await saveBlob(blob, `收支记录_${dateStamp()}.xlsx`)
+  try {
+    const blob = (await exportRecords({ ids: selectedIds.value })) as unknown as Blob
+    await saveBlob(blob, `收支记录_${dateStamp()}.xlsx`)
+  } catch {
+    /* 拦截器已提示错误信息 */
+  }
+}
+
+/** 导出当前筛选结果（忽略分页，后端按筛选条件全量导出） */
+async function handleExportFiltered() {
+  const { pageNum, pageSize, ...condition } = buildParams()
+  try {
+    const blob = (await exportRecords(condition)) as unknown as Blob
+    await saveBlob(blob, `收支记录_${dateStamp()}.xlsx`)
+  } catch {
+    /* 拦截器已提示错误信息 */
+  }
+}
+
+/** 全量导出：忽略所有筛选条件，仅受数据归属隔离约束 */
+async function handleExportAll() {
+  try {
+    const blob = (await exportRecords({ exportAll: true })) as unknown as Blob
+    await saveBlob(blob, `收支记录_${dateStamp()}.xlsx`)
+  } catch {
+    /* 拦截器已提示错误信息 */
+  }
 }
 
 /**
- * 保存导出文件；后端无权限等失败场景仍按统一响应返回 HTTP 200 + JSON，
- * 需先识别为 JSON 才能避免下载到一个错误内容文件
+ * 保存导出文件；后端鉴权失败已由响应拦截器提示（HTTP 403），
+ * 这里再识别一次 JSON 响应，避免异常情况下把错误内容当文件下载
  */
 async function saveBlob(blob: Blob, fileName: string) {
   if (blob.type.includes('application/json')) {

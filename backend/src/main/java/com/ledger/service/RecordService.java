@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -102,7 +103,7 @@ public class RecordService {
         return rows;
     }
 
-    /** 基础金额统计：按当前筛选条件聚合收入/支出/结余，过滤类型维度，保证两个金额同时可见 */
+    /** 基础金额统计：按当前筛选条件（含类型）聚合收入/支出/结余，未筛选类型时两类金额同时返回 */
     public Map<String, Object> statistics(RecordQueryDTO query) {
         QueryWrapper<FinRecord> qw = new QueryWrapper<>();
         qw.select(
@@ -130,7 +131,7 @@ public class RecordService {
         if (dateType != null && !dateType.isBlank()) {
             switch (dateType) {
                 case "today" -> start = today;
-                case "week" -> { start = today.minusDays(6); end = today; }
+                case "week" -> { start = today.with(DayOfWeek.MONDAY); end = today; }
                 case "month" -> { start = today.withDayOfMonth(1); end = today; }
                 case "custom" -> {
                     if (query.getStartDate() != null && !query.getStartDate().isBlank()) {
@@ -146,7 +147,7 @@ public class RecordService {
         return new LocalDate[]{start, end};
     }
 
-    /** 统计查询的条件：归属隔离 + 日期区间 + 分类 + 备注模糊（不含类型过滤） */
+    /** 统计查询的条件：归属隔离 + 日期区间 + 类型 + 分类 + 备注模糊，与列表筛选口径保持一致 */
     private void applyFilterColumns(QueryWrapper<FinRecord> qw, RecordQueryDTO query) {
         boolean admin = SecurityUtils.isAdmin();
         if (!admin) {
@@ -161,6 +162,9 @@ public class RecordService {
                 if (start != null) qw.ge("record_date", start);
                 if (end != null) qw.le("record_date", end);
             }
+        }
+        if (query.getType() != null && !query.getType().isBlank()) {
+            qw.eq("type", query.getType());
         }
         if (query.getCategoryId() != null) {
             qw.eq("category_id", query.getCategoryId());

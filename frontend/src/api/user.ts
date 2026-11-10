@@ -5,6 +5,7 @@ export interface UserVO {
   username: string
   nickname: string
   status: number
+  roleId?: number
   createTime: string
 }
 

@@ -18,11 +18,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final SysUserMapper userMapper;
     private final SysUserRoleMapper userRoleMapper;
@@ -38,8 +43,13 @@ public class UserService {
                     .like(SysUser::getNickname, query.getKeyword()));
         }
         Page<SysUser> result = userMapper.selectPage(page, wrapper);
+        List<Long> userIds = result.getRecords().stream().map(SysUser::getId).toList();
+        Map<Long, Long> roleMap = userIds.isEmpty() ? Map.of() : userRoleMapper.selectList(
+                        new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getUserId, userIds))
+                .stream().collect(Collectors.toMap(SysUserRole::getUserId, SysUserRole::getRoleId, (a, b) -> a));
         List<UserController.UserVO> rows = result.getRecords().stream().map(u ->
-                new UserController.UserVO(u.getId(), u.getUsername(), u.getNickname(), u.getStatus(), u.getCreateTime().toString())
+                new UserController.UserVO(u.getId(), u.getUsername(), u.getNickname(), u.getStatus(),
+                        roleMap.get(u.getId()), u.getCreateTime().toString())
         ).toList();
         return new PageResult<>(result.getTotal(), rows);
     }
@@ -86,10 +96,20 @@ public class UserService {
         if (user == null) {
             throw new BizException("用户不存在");
         }
-        String newPassword = "123456";
+        String newPassword = randomPassword();
         user.setPassword(passwordEncoder.encode(newPassword));
         userMapper.updateById(user);
         return newPassword;
+    }
+
+    /** 生成包含大小写字母与数字的 8 位随机密码，避免使用固定默认密码 */
+    private String randomPassword() {
+        final String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        StringBuilder sb = new StringBuilder(8);
+        for (int i = 0; i < 8; i++) {
+            sb.append(chars.charAt(RANDOM.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     @Transactional(rollbackFor = Exception.class)

@@ -14,6 +14,7 @@ import com.ledger.entity.SysUserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,9 @@ public class AuthService {
                     new UsernamePasswordAuthenticationToken(username, password));
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("用户名或密码错误");
+        } catch (DisabledException e) {
+            // 禁用账号登录：转换为业务异常，返回明确提示而非通用 500
+            throw new BizException("账号已被禁用，无法登录");
         }
         return (LoginUser) authentication.getPrincipal();
     }
@@ -63,7 +67,10 @@ public class AuthService {
                             new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysRoleMenu>()
                                     .in(SysRoleMenu::getRoleId, roleIds))
                     .stream().map(SysRoleMenu::getMenuId).distinct().toList();
-            allMenus = menuIds.isEmpty() ? new ArrayList<>() : menuMapper.selectBatchIds(menuIds);
+            allMenus = menuIds.isEmpty() ? new ArrayList<>() : menuMapper.selectList(
+                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysMenu>()
+                            .in(SysMenu::getId, menuIds)
+                            .eq(SysMenu::getStatus, 1));
         }
 
         List<SysMenu> menus = allMenus.stream()

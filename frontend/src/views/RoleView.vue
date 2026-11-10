@@ -154,7 +154,8 @@ async function handleSave() {
   await formRef.value.validate()
   saving.value = true
   try {
-    const payload = { roleName: form.roleName, roleCode: form.roleCode, status: form.status, remark: form.remark, menuIds: [] }
+    // 基本信息保存不带 menuIds，避免把该角色已分配的菜单权限清空
+    const payload = { roleName: form.roleName, roleCode: form.roleCode, status: form.status, remark: form.remark }
     if (form.id) {
       await updateRole(form.id, payload)
     } else {

@@ -6,6 +6,7 @@ import com.ledger.common.Result;
 import com.ledger.dto.RecordQueryDTO;
 import com.ledger.entity.FinRecord;
 import com.ledger.service.RecordService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,7 @@ public class RecordController {
     @PostMapping
     @PreAuthorize("@ss.hasPermi('finance:record:add')")
     @OperLog(title = "收支记录", businessType = 1)
-    public Result<Void> add(@RequestBody FinRecord record) {
+    public Result<Void> add(@Valid @RequestBody FinRecord record) {
         recordService.add(record);
         return Result.ok();
     }
@@ -43,7 +44,7 @@ public class RecordController {
     @PutMapping("/{id}")
     @PreAuthorize("@ss.hasPermi('finance:record:edit')")
     @OperLog(title = "收支记录", businessType = 2)
-    public Result<Void> edit(@PathVariable Long id, @RequestBody FinRecord record) {
+    public Result<Void> edit(@PathVariable Long id, @Valid @RequestBody FinRecord record) {
         recordService.edit(id, record);
         return Result.ok();
     }

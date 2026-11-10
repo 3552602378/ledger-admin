@@ -63,6 +63,6 @@ public class UserController {
         return Result.ok();
     }
 
-    public record UserVO(Long id, String username, String nickname, Integer status, String createTime) {
+    public record UserVO(Long id, String username, String nickname, Integer status, Long roleId, String createTime) {
     }
 }

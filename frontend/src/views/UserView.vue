@@ -21,6 +21,11 @@
       <el-table-column prop="id" label="ID" width="70" />
       <el-table-column prop="username" label="用户名" min-width="120" />
       <el-table-column prop="nickname" label="昵称" min-width="120" />
+      <el-table-column label="角色" width="130">
+        <template #default="{ row }">
+          {{ roleName(row.roleId) }}
+        </template>
+      </el-table-column>
       <el-table-column prop="createTime" label="创建时间" width="180" />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
@@ -87,6 +92,11 @@
         <el-form-item v-if="!form.id" label="密码" prop="password">
           <el-input v-model="form.password" type="password" placeholder="不填则默认 123456" show-password />
         </el-form-item>
+        <el-form-item label="角色" prop="roleId">
+          <el-select v-model="form.roleId" placeholder="请选择角色" style="width: 100%">
+            <el-option v-for="r in roles" :key="r.id" :label="r.roleName" :value="r.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio :value="1">启用</el-radio>
@@ -116,6 +126,7 @@ import {
 } from '@/api/user'
 import { usePermissionStore } from '@/stores/permission'
 import { useUserStore } from '@/stores/user'
+import { listRoles, type RoleVO } from '@/api/role'
 
 const permissionStore = usePermissionStore()
 const userStore = useUserStore()
@@ -126,6 +137,19 @@ const loading = ref(false)
 const list = ref<UserVO[]>([])
 const total = ref(0)
 const query = reactive({ pageNum: 1, pageSize: 10, keyword: '' })
+
+// 角色列表：用于表格回显与表单选择
+const roles = ref<RoleVO[]>([])
+
+function roleName(roleId?: number) {
+  if (roleId == null) return '-'
+  return roles.value.find((r) => r.id === roleId)?.roleName ?? '-'
+}
+
+async function loadRoles() {
+  const res: any = await listRoles()
+  roles.value = res.data ?? []
+}
 
 async function loadList() {
   loading.value = true
@@ -168,6 +192,7 @@ const form = reactive<any>({
   username: '',
   nickname: '',
   password: '',
+  roleId: undefined,
   status: 1,
 })
 
@@ -175,13 +200,21 @@ const formRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
   password: [{ min: 6, message: '密码至少 6 位', trigger: 'blur' }],
+  roleId: [{ required: true, message: '请选择角色', trigger: 'change' }],
 }
 
 function openDialog(row?: UserVO) {
   if (row) {
-    Object.assign(form, { id: row.id, username: row.username, nickname: row.nickname, status: row.status, password: '' })
+    Object.assign(form, {
+      id: row.id,
+      username: row.username,
+      nickname: row.nickname,
+      status: row.status,
+      roleId: row.roleId,
+      password: '',
+    })
   } else {
-    Object.assign(form, { id: undefined, username: '', nickname: '', password: '', status: 1 })
+    Object.assign(form, { id: undefined, username: '', nickname: '', password: '', roleId: undefined, status: 1 })
   }
   dialogVisible.value = true
 }
@@ -191,9 +224,20 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id) {
-      await updateUser(form.id, { username: form.username, nickname: form.nickname, status: form.status })
+      await updateUser(form.id, {
+        username: form.username,
+        nickname: form.nickname,
+        status: form.status,
+        roleId: form.roleId,
+      })
     } else {
-      await addUser({ username: form.username, nickname: form.nickname, status: form.status, password: form.password || undefined })
+      await addUser({
+        username: form.username,
+        nickname: form.nickname,
+        status: form.status,
+        roleId: form.roleId,
+        password: form.password || undefined,
+      })
     }
     ElMessage.success('保存成功')
     dialogVisible.value = false
@@ -229,7 +273,9 @@ async function handleDelete(row: UserVO) {
   loadList()
 }
 
-onMounted(loadList)
+onMounted(async () => {
+  await Promise.all([loadRoles(), loadList()])
+})
 </script>
 
 <style scoped>

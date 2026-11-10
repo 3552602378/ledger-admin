@@ -23,24 +23,47 @@ request.interceptors.response.use(
     const { data } = response
     if (data.code && data.code !== 200) {
       ElMessage.error(data.message || '请求失败')
-      if (data.code === 401) {
-        localStorage.removeItem('token')
-        router.push('/login')
-      }
       return Promise.reject(new Error(data.message))
     }
     return data
   },
   (error) => {
-    const { response } = error
-    if (response?.status === 401) {
+    const { response, config } = error
+    const status = response?.status
+
+    // 导出等 blob 请求失败时，响应体是 Blob 包着的 JSON，需要先还原才能读到 message
+    const parseMessage = async (): Promise<string | undefined> => {
+      const data = response?.data
+      if (data instanceof Blob) {
+        try {
+          return JSON.parse(await data.text())?.message
+        } catch {
+          return undefined
+        }
+      }
+      return data?.message
+    }
+
+    if (status === 401) {
+      // 登录接口自身的 401 是凭据错误，直接提示服务端文案，不做登出跳转
+      if (config?.url?.includes('/auth/login')) {
+        ElMessage.error(response?.data?.message || '用户名或密码错误')
+        return Promise.reject(error)
+      }
       ElMessage.error('登录已过期，请重新登录')
       localStorage.removeItem('token')
       router.push('/login')
-    } else {
-      ElMessage.error(response?.data?.message || '网络异常')
+      return Promise.reject(error)
     }
-    return Promise.reject(error)
+
+    return parseMessage().then((message) => {
+      if (status === 403) {
+        ElMessage.error(message || '没有权限访问该资源')
+      } else {
+        ElMessage.error(message || '网络异常')
+      }
+      return Promise.reject(error)
+    })
   },
 )
 

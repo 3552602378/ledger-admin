@@ -50,6 +50,8 @@ async function handleLogin() {
     await userStore.fetchUserInfo()
     ElMessage.success('登录成功')
     router.push(userStore.homePath)
+  } catch {
+    /* 凭据错误/账号禁用等已由响应拦截器提示 */
   } finally {
     loading.value = false
   }

@@ -1,6 +1,8 @@
 package com.ledger.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -19,12 +21,16 @@ public class FinRecord implements Serializable {
 
     private Long userId;
 
+    @NotBlank(message = "收支类型不能为空")
     private String type;
 
+    @NotNull(message = "所属分类不能为空")
     private Long categoryId;
 
+    @NotNull(message = "金额不能为空")
     private BigDecimal amount;
 
+    @NotNull(message = "收支日期不能为空")
     private LocalDate recordDate;
 
     private String remark;
