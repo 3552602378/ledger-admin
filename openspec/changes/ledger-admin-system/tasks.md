@@ -46,7 +46,7 @@
 
 ## 6. 验收与交付文档
 
-- [ ] 6.1 前后端联调自测：按 `openspec/changes/ledger-admin-system/specs/` 下全部 scenarios 逐条执行，记录测试结果与截图到 `docs/test-report.md`，验证全部通过
-- [ ] 6.2 编写工程介绍文档 `docs/README.md`：包含项目概述、技术选型、架构图（文字描述或 ASCII）、数据库表说明、后端/前端目录说明、启动步骤（JDK/Maven/Node/MySQL 环境配置、脚本执行、启动命令）、默认账号；验证文档与实现一致
-- [ ] 6.3 整理 AI 提示词记录 `docs/prompts.md`：按模块分类记录引导 AI 完成核心功能的关键 Prompt（认证、RBAC、财务、看板、导出、日志），并附简短反思；验证记录完整、可读
-- [ ] 6.4 编写答辩演示脚本 `docs/presentation.md`：设计 10–15 分钟演示流程（工程介绍 → 登录/RBAC 演示 → 财务模块演示 → 看板/导出/批量/日志加分项 → OpenSpec 文档讲解 → 收尾）；验证可在 20 分钟内完整走查
+- [x] 6.1 前后端联调自测：按 `openspec/changes/ledger-admin-system/specs/` 下全部 scenarios 逐条执行，记录测试结果与截图到 `docs/test-report.md`，验证全部通过
+- [x] 6.2 编写工程介绍文档 `docs/README.md`：包含项目概述、技术选型、架构图（文字描述或 ASCII）、数据库表说明、后端/前端目录说明、启动步骤（JDK/Maven/Node/MySQL 环境配置、脚本执行、启动命令）、默认账号；验证文档与实现一致
+- [x] 6.3 整理 AI 提示词记录 `docs/prompts.md`：按模块分类记录引导 AI 完成核心功能的关键 Prompt（认证、RBAC、财务、看板、导出、日志），并附简短反思；验证记录完整、可读
+- [x] 6.4 编写答辩演示脚本 `docs/presentation.md`：设计 10–15 分钟演示流程（工程介绍 → 登录/RBAC 演示 → 财务模块演示 → 看板/导出/批量/日志加分项 → OpenSpec 文档讲解 → 收尾）；验证可在 20 分钟内完整走查
